@@ -390,12 +390,12 @@
         <h1><span class="orange-letter">V</span>izor <span style="font-size: 0.6em; color: #666;">Auto-Sort</span></h1>
         
         <div class="logic-explanation">
-            <h4>🔄 How Auto-Sort Works:</h4>
-            <p><strong>1.</strong> Enter your Source data (reference order)</p>
-            <p><strong>2.</strong> Enter your Target data (any order)</p>
-            <p><strong>3.</strong> Hit "Auto-Sort Target" - the third field will show target values rearranged to match source order</p>
-            <p><strong>4.</strong> Compare Source vs Auto-Sorted for perfect matching</p>
-            <p><strong>Example:</strong> Source: [a,b,c] + Target: [b,c,a] → Auto-Sorted: [a,b,c] = Perfect Match! ✅</p>
+            <h4>🔄 How Auto-Sort Works (NO DELETION):</h4>
+            <p><strong>1.</strong> Takes ALL target values (preserves everything)</p>
+            <p><strong>2.</strong> Rearranges target items to match source order</p>
+            <p><strong>3.</strong> Extra target items (not in source) are kept at the end</p>
+            <p><strong>4.</strong> Missing items (in source but not target) show as [MISSING FROM TARGET]</p>
+            <p><strong>Example:</strong> Source: [a,b,c] + Target: [b,x,c,a,y] → Auto-Sorted: [a,b,c,x,y] ✅</p>
         </div>
         
         <div class="input-section">
@@ -411,7 +411,7 @@
             
             <div class="input-group auto-field">
                 <h3>🔄 Auto-Sorted Target</h3>
-                <textarea id="autoSortedData" class="auto-rearranged" placeholder="This will be automatically filled when you click 'Auto-Sort Target'&#10;&#10;It will show target values rearranged to match source order" readonly></textarea>
+                <textarea id="autoSortedData" class="auto-rearranged" placeholder="This will show ALL target values rearranged to match source order&#10;&#10;• Items matching source order come first&#10;• Extra target items are preserved at the end&#10;• No data is ever deleted!" readonly></textarea>
             </div>
         </div>
         
@@ -480,31 +480,49 @@
                 .map(item => item.trim())
                 .filter(item => item && item.length > 0);
 
-            // Create auto-sorted target array based on source order
+            // Create a copy of target items to work with (preserve original)
+            let remainingTargetItems = [...targetItems];
             const autoSorted = [];
-            const targetSet = new Set(targetItems);
             
-            // For each source item, find it in target and add to auto-sorted
+            // Step 1: For each source position, find matching target item and place it
             sourceItems.forEach(sourceItem => {
-                if (targetSet.has(sourceItem)) {
-                    autoSorted.push(sourceItem);
+                const targetIndex = remainingTargetItems.findIndex(item => item === sourceItem);
+                if (targetIndex !== -1) {
+                    // Found matching item in target, add it to auto-sorted and remove from remaining
+                    autoSorted.push(remainingTargetItems[targetIndex]);
+                    remainingTargetItems.splice(targetIndex, 1);
                 } else {
-                    autoSorted.push('[NOT FOUND]');
+                    // Source item not found in target, add placeholder
+                    autoSorted.push('[MISSING FROM TARGET]');
                 }
+            });
+
+            // Step 2: Add any remaining target items that weren't in source (preserve them!)
+            remainingTargetItems.forEach(remainingItem => {
+                autoSorted.push(remainingItem);
             });
 
             // Update the auto-sorted field
             document.getElementById('autoSortedData').value = autoSorted.join('\n');
             
-            // Show success message
-            const foundCount = autoSorted.filter(item => item !== '[NOT FOUND]').length;
-            const totalCount = sourceItems.length;
+            // Show success message with detailed info
+            const matchedCount = sourceItems.filter(sourceItem => 
+                targetItems.includes(sourceItem)
+            ).length;
+            const extraTargetCount = remainingTargetItems.length;
+            const missingFromTarget = sourceItems.length - matchedCount;
             
-            if (foundCount === totalCount) {
-                alert(`✅ Perfect! All ${totalCount} items auto-sorted successfully!`);
-            } else {
-                alert(`⚠️ Auto-sorted ${foundCount}/${totalCount} items. Some items from source were not found in target.`);
+            let message = `✅ Auto-sort completed!\n`;
+            message += `📊 Matched items: ${matchedCount}\n`;
+            if (extraTargetCount > 0) {
+                message += `➕ Extra target items preserved: ${extraTargetCount}\n`;
             }
+            if (missingFromTarget > 0) {
+                message += `❌ Missing from target: ${missingFromTarget}\n`;
+            }
+            message += `🔄 Total items in auto-sorted: ${autoSorted.length}`;
+            
+            alert(message);
         }
 
         function compareData() {
