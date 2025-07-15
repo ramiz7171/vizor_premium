@@ -480,47 +480,63 @@
                 .map(item => item.trim())
                 .filter(item => item && item.length > 0);
 
-            // Create a copy of target items to work with (preserve original)
-            let remainingTargetItems = [...targetItems];
+            // Create arrays to track which target items have been used
+            const targetUsed = new Array(targetItems.length).fill(false);
             const autoSorted = [];
             
-            // Step 1: For each source position, find matching target item and place it
+            // Step 1: For each source position, try to find matching target item
             sourceItems.forEach(sourceItem => {
-                const targetIndex = remainingTargetItems.findIndex(item => item === sourceItem);
-                if (targetIndex !== -1) {
-                    // Found matching item in target, add it to auto-sorted and remove from remaining
-                    autoSorted.push(remainingTargetItems[targetIndex]);
-                    remainingTargetItems.splice(targetIndex, 1);
+                // Find first unused target item that matches this source item
+                let foundIndex = -1;
+                for (let i = 0; i < targetItems.length; i++) {
+                    if (!targetUsed[i] && targetItems[i] === sourceItem) {
+                        foundIndex = i;
+                        break;
+                    }
+                }
+                
+                if (foundIndex !== -1) {
+                    // Found matching unused target item
+                    autoSorted.push(targetItems[foundIndex]);
+                    targetUsed[foundIndex] = true;
                 } else {
-                    // Source item not found in target, add placeholder
+                    // No matching target item found for this source item
                     autoSorted.push('[MISSING FROM TARGET]');
                 }
             });
 
-            // Step 2: Add any remaining target items that weren't in source (preserve them!)
-            remainingTargetItems.forEach(remainingItem => {
-                autoSorted.push(remainingItem);
-            });
+            // Step 2: Add ALL remaining unused target items (PRESERVE EVERYTHING!)
+            for (let i = 0; i < targetItems.length; i++) {
+                if (!targetUsed[i]) {
+                    autoSorted.push(targetItems[i]);
+                }
+            }
 
             // Update the auto-sorted field
             document.getElementById('autoSortedData').value = autoSorted.join('\n');
             
-            // Show success message with detailed info
-            const matchedCount = sourceItems.filter(sourceItem => 
-                targetItems.includes(sourceItem)
-            ).length;
-            const extraTargetCount = remainingTargetItems.length;
-            const missingFromTarget = sourceItems.length - matchedCount;
+            // Show detailed success message
+            const matchedCount = sourceItems.filter(sourceItem => {
+                // Count how many source items have matches in target
+                return targetItems.includes(sourceItem);
+            }).length;
             
-            let message = `✅ Auto-sort completed!\n`;
-            message += `📊 Matched items: ${matchedCount}\n`;
-            if (extraTargetCount > 0) {
-                message += `➕ Extra target items preserved: ${extraTargetCount}\n`;
+            const unusedTargetCount = targetUsed.filter(used => !used).length;
+            const missingFromTarget = sourceItems.filter(sourceItem => {
+                return !targetItems.includes(sourceItem);
+            }).length;
+            
+            let message = `✅ Auto-sort completed - NO DATA DELETED!\n\n`;
+            message += `📊 Source items: ${sourceItems.length}\n`;
+            message += `📊 Target items: ${targetItems.length}\n`;
+            message += `📊 Auto-sorted items: ${autoSorted.length}\n\n`;
+            message += `✅ Matched & positioned: ${matchedCount}\n`;
+            if (unusedTargetCount > 0) {
+                message += `➕ Extra target items preserved: ${unusedTargetCount}\n`;
             }
             if (missingFromTarget > 0) {
                 message += `❌ Missing from target: ${missingFromTarget}\n`;
             }
-            message += `🔄 Total items in auto-sorted: ${autoSorted.length}`;
             
             alert(message);
         }
