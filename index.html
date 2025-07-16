@@ -637,10 +637,11 @@
                 }
             });
 
-            // Step 2: Add ALL remaining unused target rows (PRESERVE EVERYTHING!)
+            // Step 2: Track unused target items for reporting (but don't add them to auto-sorted)
+            const unusedTargetItems = [];
             for (let i = 0; i < targetRows.length; i++) {
                 if (!targetUsed[i]) {
-                    autoSorted.push(targetRows[i]);
+                    unusedTargetItems.push(targetRows[i]);
                 }
             }
 
@@ -656,16 +657,15 @@
                 targetRows.some(targetRow => rowsEqual(sourceRow, targetRow))
             ).length;
             
-            const unusedTargetCount = targetUsed.filter(used => !used).length;
             const missingFromTarget = sourceRows.length - exactMatches;
             
-            let message = `✅ Separate Column Auto-sort completed - NO DATA DELETED!\n\n`;
+            let message = `✅ Separate Column Auto-sort completed - NO DUPLICATION!\n\n`;
             message += `📊 Source rows: ${sourceRows.length}\n`;
             message += `📊 Target rows: ${targetRows.length}\n`;
             message += `📊 Auto-sorted rows: ${autoSorted.length}\n\n`;
             message += `✅ Exact matches (both columns): ${exactMatches}\n`;
-            if (unusedTargetCount > 0) {
-                message += `➕ Extra target rows preserved: ${unusedTargetCount}\n`;
+            if (unusedTargetItems.length > 0) {
+                message += `➕ Extra target items (not shown to avoid duplication): ${unusedTargetItems.length}\n`;
             }
             if (missingFromTarget > 0) {
                 message += `❌ Missing from target: ${missingFromTarget}\n`;
