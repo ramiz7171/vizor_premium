@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto-Sort Vizor</title>
+    <title>Auto-Sort Vizor - Separate Columns</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -14,7 +14,7 @@
         }
         
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -90,14 +90,46 @@
         
         .input-group h3 {
             margin-top: 0;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             color: #333;
             text-align: center;
             font-size: 1.1em;
         }
         
+        .columns-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .column-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .column-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+        
+        .column-label.col1 {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+        
+        .column-label.col2 {
+            background: rgba(255, 140, 0, 0.1);
+            color: #ff8c00;
+        }
+        
         textarea {
-            width: calc(100% - 10px);
+            width: 100%;
             height: 150px;
             border: 2px solid #ddd;
             border-radius: 10px;
@@ -115,6 +147,14 @@
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        textarea.col1 {
+            border-color: #667eea;
+        }
+        
+        textarea.col2 {
+            border-color: #ff8c00;
         }
         
         textarea.auto-rearranged {
@@ -214,7 +254,7 @@
         
         .comparison-row {
             display: grid;
-            grid-template-columns: auto 1fr 1fr auto;
+            grid-template-columns: auto 2fr 2fr auto;
             gap: 15px;
             align-items: center;
             margin-bottom: 12px;
@@ -238,6 +278,11 @@
             border-left: 5px solid #dc3545;
         }
         
+        .comparison-row.partial-match {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+        }
+        
         .position-label {
             font-weight: bold;
             color: #666;
@@ -251,7 +296,7 @@
             border-radius: 8px;
             border: 2px solid #e9ecef;
             font-family: 'Courier New', monospace;
-            font-size: 16px;
+            font-size: 14px;
             text-align: center;
             font-weight: bold;
         }
@@ -264,6 +309,31 @@
         .value-box.rearranged {
             border-color: #28a745;
             background: #f8fff9;
+        }
+        
+        .column-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .column-cell {
+            padding: 6px 8px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 12px;
+            text-align: center;
+            min-height: 20px;
+        }
+        
+        .column-cell.col1 {
+            border-left: 3px solid #667eea;
+        }
+        
+        .column-cell.col2 {
+            border-left: 3px solid #ff8c00;
         }
         
         .match-icon {
@@ -287,7 +357,7 @@
         
         .missing-items {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 8px;
             margin-top: 10px;
         }
@@ -298,7 +368,7 @@
             border-radius: 6px;
             font-family: 'Courier New', monospace;
             text-align: center;
-            font-size: 14px;
+            font-size: 12px;
             border: 1px solid #ffc107;
         }
         
@@ -366,6 +436,10 @@
             .summary-card {
                 padding: 12px;
             }
+            
+            .column-data {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 480px) {
@@ -382,41 +456,71 @@
                 width: 90%;
                 margin: 5px auto;
             }
+            
+            .columns-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><span class="orange-letter">V</span>izor <span style="font-size: 0.6em; color: #666;">Auto-Sort</span></h1>
+        <h1><span class="orange-letter">V</span>izor <span style="font-size: 0.6em; color: #666;">Separate Columns</span></h1>
         
         <div class="logic-explanation">
-            <h4>🔄 How Auto-Sort Works (NO DELETION):</h4>
-            <p><strong>1.</strong> Takes ALL target values (preserves everything)</p>
-            <p><strong>2.</strong> Rearranges target items to match source order</p>
-            <p><strong>3.</strong> Extra target items (not in source) are kept at the end</p>
-            <p><strong>4.</strong> Missing items (in source but not target) show as [MISSING FROM TARGET]</p>
-            <p><strong>Example:</strong> Source: [a,b,c] + Target: [b,x,c,a,y] → Auto-Sorted: [a,b,c,x,y] ✅</p>
+            <h4>📋 Separate Column Input:</h4>
+            <p><strong>1.</strong> Click and paste into Column 1 and Column 2 separately for each section</p>
+            <p><strong>2.</strong> Auto-sort rearranges both columns together to match source order</p>
+            <p><strong>3.</strong> Shows matches, partial matches, and missing data for both columns</p>
+            <p><strong>4.</strong> All data is preserved - nothing gets deleted</p>
         </div>
         
         <div class="input-section">
             <div class="input-group">
                 <h3>📋 Source Data (Reference)</h3>
-                <textarea id="sourceData" placeholder="Enter source data (one item per line)&#10;&#10;Example:&#10;a&#10;b&#10;c" onpaste="setTimeout(() => cleanTextarea('sourceData'), 10)"></textarea>
+                <div class="columns-container">
+                    <div class="column-wrapper">
+                        <div class="column-label col1">Column 1</div>
+                        <textarea id="sourceCol1" class="col1" placeholder="Click here to paste Column 1 data&#10;&#10;Example:&#10;A&#10;C&#10;E" onpaste="setTimeout(() => cleanTextarea('sourceCol1'), 10)"></textarea>
+                    </div>
+                    <div class="column-wrapper">
+                        <div class="column-label col2">Column 2</div>
+                        <textarea id="sourceCol2" class="col2" placeholder="Click here to paste Column 2 data&#10;&#10;Example:&#10;B&#10;D&#10;F" onpaste="setTimeout(() => cleanTextarea('sourceCol2'), 10)"></textarea>
+                    </div>
+                </div>
             </div>
             
             <div class="input-group">
                 <h3>🎯 Target Data (Mixed Order)</h3>
-                <textarea id="targetData" placeholder="Enter target data (one item per line)&#10;&#10;Example:&#10;b&#10;c&#10;a" onpaste="setTimeout(() => cleanTextarea('targetData'), 10)"></textarea>
+                <div class="columns-container">
+                    <div class="column-wrapper">
+                        <div class="column-label col1">Column 1</div>
+                        <textarea id="targetCol1" class="col1" placeholder="Click here to paste Column 1 data&#10;&#10;Example:&#10;C&#10;E&#10;A" onpaste="setTimeout(() => cleanTextarea('targetCol1'), 10)"></textarea>
+                    </div>
+                    <div class="column-wrapper">
+                        <div class="column-label col2">Column 2</div>
+                        <textarea id="targetCol2" class="col2" placeholder="Click here to paste Column 2 data&#10;&#10;Example:&#10;D&#10;F&#10;B" onpaste="setTimeout(() => cleanTextarea('targetCol2'), 10)"></textarea>
+                    </div>
+                </div>
             </div>
             
             <div class="input-group auto-field">
                 <h3>🔄 Auto-Sorted Target</h3>
-                <textarea id="autoSortedData" class="auto-rearranged" placeholder="This will show ALL target values rearranged to match source order&#10;&#10;• Items matching source order come first&#10;• Extra target items are preserved at the end&#10;• No data is ever deleted!" readonly></textarea>
+                <div class="columns-container">
+                    <div class="column-wrapper">
+                        <div class="column-label col1">Column 1</div>
+                        <textarea id="autoSortedCol1" class="col1 auto-rearranged" placeholder="Auto-sorted Column 1 will appear here" readonly></textarea>
+                    </div>
+                    <div class="column-wrapper">
+                        <div class="column-label col2">Column 2</div>
+                        <textarea id="autoSortedCol2" class="col2 auto-rearranged" placeholder="Auto-sorted Column 2 will appear here" readonly></textarea>
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="button-group">
-            <button onclick="autoSortTarget()" class="sort-button">🔄 Auto-Sort Target</button>
+            <button onclick="autoSortTarget()" class="sort-button">🔄 Auto-Sort Target Columns</button>
             <button onclick="compareData()">🔍 Compare Source vs Auto-Sorted</button>
             <button onclick="clearData()">🧹 Clear All</button>
         </div>
@@ -425,7 +529,7 @@
             <div class="summary" id="summary"></div>
             
             <div class="comparison-section">
-                <h4>📊 Source vs Auto-Sorted Comparison</h4>
+                <h4>📊 Column-by-Column Comparison</h4>
                 <div id="comparisonResults"></div>
             </div>
             
@@ -439,7 +543,7 @@
         </div>
         
         <footer style="text-align: center; margin-top: 40px; padding: 20px; color: #666; font-style: italic; border-top: 1px solid #e0e0e0;">
-            Auto-Sort Logic | Originally developed by: <strong>Ramiz</strong>
+            Separate Column Logic | Originally developed by: <strong>Ramiz</strong>
         </footer>
     </div>
 
@@ -462,77 +566,106 @@
             }
         }
 
-        function autoSortTarget() {
-            const sourceInput = document.getElementById('sourceData').value.trim();
-            const targetInput = document.getElementById('targetData').value.trim();
+        function parseColumnData(col1Input, col2Input) {
+            const col1Lines = col1Input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            const col2Lines = col2Input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            
+            const maxLength = Math.max(col1Lines.length, col2Lines.length);
+            const rows = [];
+            
+            for (let i = 0; i < maxLength; i++) {
+                rows.push({
+                    col1: col1Lines[i] || '',
+                    col2: col2Lines[i] || '',
+                    index: i
+                });
+            }
+            
+            return rows;
+        }
 
-            if (!sourceInput || !targetInput) {
-                alert('Please enter both Source and Target data first!');
+        function rowsEqual(row1, row2) {
+            return row1.col1 === row2.col1 && row1.col2 === row2.col2;
+        }
+
+        function autoSortTarget() {
+            const sourceCol1 = document.getElementById('sourceCol1').value.trim();
+            const sourceCol2 = document.getElementById('sourceCol2').value.trim();
+            const targetCol1 = document.getElementById('targetCol1').value.trim();
+            const targetCol2 = document.getElementById('targetCol2').value.trim();
+
+            if (!sourceCol1 && !sourceCol2) {
+                alert('Please enter source data in at least one column!');
                 return;
             }
 
-            // Parse data
-            const sourceItems = sourceInput.split('\n')
-                .map(item => item.trim())
-                .filter(item => item && item.length > 0);
-            
-            const targetItems = targetInput.split('\n')
-                .map(item => item.trim())
-                .filter(item => item && item.length > 0);
+            if (!targetCol1 && !targetCol2) {
+                alert('Please enter target data in at least one column!');
+                return;
+            }
 
-            // Create arrays to track which target items have been used
-            const targetUsed = new Array(targetItems.length).fill(false);
+            // Parse data into rows
+            const sourceRows = parseColumnData(sourceCol1, sourceCol2);
+            const targetRows = parseColumnData(targetCol1, targetCol2);
+
+            // Create arrays to track which target rows have been used
+            const targetUsed = new Array(targetRows.length).fill(false);
             const autoSorted = [];
             
-            // Step 1: For each source position, try to find matching target item
-            sourceItems.forEach(sourceItem => {
-                // Find first unused target item that matches this source item
+            // Step 1: For each source row, try to find matching target row
+            sourceRows.forEach(sourceRow => {
+                // Find first unused target row that matches this source row
                 let foundIndex = -1;
-                for (let i = 0; i < targetItems.length; i++) {
-                    if (!targetUsed[i] && targetItems[i] === sourceItem) {
+                for (let i = 0; i < targetRows.length; i++) {
+                    if (!targetUsed[i] && rowsEqual(targetRows[i], sourceRow)) {
                         foundIndex = i;
                         break;
                     }
                 }
                 
                 if (foundIndex !== -1) {
-                    // Found matching unused target item
-                    autoSorted.push(targetItems[foundIndex]);
+                    // Found matching unused target row
+                    autoSorted.push(targetRows[foundIndex]);
                     targetUsed[foundIndex] = true;
                 } else {
-                    // No matching target item found for this source item
-                    autoSorted.push('[MISSING FROM TARGET]');
+                    // No matching target row found for this source row
+                    autoSorted.push({
+                        col1: '[MISSING FROM TARGET]',
+                        col2: '[MISSING FROM TARGET]',
+                        index: sourceRow.index
+                    });
                 }
             });
 
-            // Step 2: Add ALL remaining unused target items (PRESERVE EVERYTHING!)
-            for (let i = 0; i < targetItems.length; i++) {
+            // Step 2: Add ALL remaining unused target rows (PRESERVE EVERYTHING!)
+            for (let i = 0; i < targetRows.length; i++) {
                 if (!targetUsed[i]) {
-                    autoSorted.push(targetItems[i]);
+                    autoSorted.push(targetRows[i]);
                 }
             }
 
-            // Update the auto-sorted field
-            document.getElementById('autoSortedData').value = autoSorted.join('\n');
+            // Update the auto-sorted fields
+            const autoSortedCol1 = autoSorted.map(row => row.col1).join('\n');
+            const autoSortedCol2 = autoSorted.map(row => row.col2).join('\n');
+            
+            document.getElementById('autoSortedCol1').value = autoSortedCol1;
+            document.getElementById('autoSortedCol2').value = autoSortedCol2;
             
             // Show detailed success message
-            const matchedCount = sourceItems.filter(sourceItem => {
-                // Count how many source items have matches in target
-                return targetItems.includes(sourceItem);
-            }).length;
+            const exactMatches = sourceRows.filter(sourceRow => 
+                targetRows.some(targetRow => rowsEqual(sourceRow, targetRow))
+            ).length;
             
             const unusedTargetCount = targetUsed.filter(used => !used).length;
-            const missingFromTarget = sourceItems.filter(sourceItem => {
-                return !targetItems.includes(sourceItem);
-            }).length;
+            const missingFromTarget = sourceRows.length - exactMatches;
             
-            let message = `✅ Auto-sort completed - NO DATA DELETED!\n\n`;
-            message += `📊 Source items: ${sourceItems.length}\n`;
-            message += `📊 Target items: ${targetItems.length}\n`;
-            message += `📊 Auto-sorted items: ${autoSorted.length}\n\n`;
-            message += `✅ Matched & positioned: ${matchedCount}\n`;
+            let message = `✅ Separate Column Auto-sort completed - NO DATA DELETED!\n\n`;
+            message += `📊 Source rows: ${sourceRows.length}\n`;
+            message += `📊 Target rows: ${targetRows.length}\n`;
+            message += `📊 Auto-sorted rows: ${autoSorted.length}\n\n`;
+            message += `✅ Exact matches (both columns): ${exactMatches}\n`;
             if (unusedTargetCount > 0) {
-                message += `➕ Extra target items preserved: ${unusedTargetCount}\n`;
+                message += `➕ Extra target rows preserved: ${unusedTargetCount}\n`;
             }
             if (missingFromTarget > 0) {
                 message += `❌ Missing from target: ${missingFromTarget}\n`;
@@ -542,61 +675,71 @@
         }
 
         function compareData() {
-            const sourceInput = document.getElementById('sourceData').value.trim();
-            const autoSortedInput = document.getElementById('autoSortedData').value.trim();
+            const sourceCol1 = document.getElementById('sourceCol1').value.trim();
+            const sourceCol2 = document.getElementById('sourceCol2').value.trim();
+            const autoSortedCol1 = document.getElementById('autoSortedCol1').value.trim();
+            const autoSortedCol2 = document.getElementById('autoSortedCol2').value.trim();
 
-            if (!sourceInput || !autoSortedInput) {
+            if ((!sourceCol1 && !sourceCol2) || (!autoSortedCol1 && !autoSortedCol2)) {
                 alert('Please run Auto-Sort Target first!');
                 return;
             }
 
-            // Parse data
-            const sourceItems = sourceInput.split('\n')
-                .map(item => item.trim())
-                .filter(item => item && item.length > 0);
-            
-            const autoSortedItems = autoSortedInput.split('\n')
-                .map(item => item.trim())
-                .filter(item => item && item.length > 0);
+            // Parse data into rows
+            const sourceRows = parseColumnData(sourceCol1, sourceCol2);
+            const autoSortedRows = parseColumnData(autoSortedCol1, autoSortedCol2);
 
-            // Ensure both arrays have the same length
-            const maxLength = Math.max(sourceItems.length, autoSortedItems.length);
+            // Ensure both arrays have the same length for comparison
+            const maxLength = Math.max(sourceRows.length, autoSortedRows.length);
             
             // Create comparison data
             const comparisons = [];
-            let matches = 0;
+            let exactMatches = 0;
+            let partialMatches = 0;
             let mismatches = 0;
 
             for (let i = 0; i < maxLength; i++) {
-                const sourceValue = sourceItems[i] || '[MISSING]';
-                const autoSortedValue = autoSortedItems[i] || '[MISSING]';
-                const isMatch = sourceValue === autoSortedValue && sourceValue !== '[NOT FOUND]' && sourceValue !== '[MISSING]';
+                const sourceRow = sourceRows[i] || { col1: '[MISSING]', col2: '[MISSING]' };
+                const autoSortedRow = autoSortedRows[i] || { col1: '[MISSING]', col2: '[MISSING]' };
                 
-                if (isMatch) {
-                    matches++;
+                let matchType = 'mismatch';
+                let matchIcon = '❌';
+                
+                if (rowsEqual(sourceRow, autoSortedRow) && 
+                    sourceRow.col1 !== '[MISSING]' && sourceRow.col1 !== '[MISSING FROM TARGET]' &&
+                    sourceRow.col2 !== '[MISSING]' && sourceRow.col2 !== '[MISSING FROM TARGET]') {
+                    matchType = 'match';
+                    matchIcon = '✅';
+                    exactMatches++;
+                } else if ((sourceRow.col1 === autoSortedRow.col1 && sourceRow.col1 !== '[MISSING]' && sourceRow.col1 !== '[MISSING FROM TARGET]') ||
+                          (sourceRow.col2 === autoSortedRow.col2 && sourceRow.col2 !== '[MISSING]' && sourceRow.col2 !== '[MISSING FROM TARGET]')) {
+                    matchType = 'partial-match';
+                    matchIcon = '⚠️';
+                    partialMatches++;
                 } else {
                     mismatches++;
                 }
 
                 comparisons.push({
                     position: i + 1,
-                    sourceValue: sourceValue,
-                    autoSortedValue: autoSortedValue,
-                    isMatch: isMatch,
-                    status: isMatch ? 'match' : 'mismatch'
+                    sourceRow: sourceRow,
+                    autoSortedRow: autoSortedRow,
+                    matchType: matchType,
+                    matchIcon: matchIcon
                 });
             }
 
-            const matchPercentage = maxLength > 0 ? Math.round((matches / maxLength) * 100) : 0;
+            const matchPercentage = maxLength > 0 ? Math.round((exactMatches / maxLength) * 100) : 0;
 
             // Store comparison data
             comparisonData = {
-                source: sourceItems,
-                autoSorted: autoSortedItems,
+                sourceRows: sourceRows,
+                autoSortedRows: autoSortedRows,
                 comparisons: comparisons,
                 stats: {
-                    totalPositions: maxLength,
-                    matches: matches,
+                    totalRows: maxLength,
+                    exactMatches: exactMatches,
+                    partialMatches: partialMatches,
                     mismatches: mismatches,
                     matchPercentage: matchPercentage
                 }
@@ -640,8 +783,12 @@
                     <div class="number">${statusText}</div>
                 </div>
                 <div class="summary-card">
-                    <h4>✅ Perfect Matches</h4>
-                    <div class="number">${data.stats.matches}</div>
+                    <h4>✅ Exact Matches</h4>
+                    <div class="number">${data.stats.exactMatches}</div>
+                </div>
+                <div class="summary-card">
+                    <h4>⚠️ Partial Matches</h4>
+                    <div class="number">${data.stats.partialMatches}</div>
                 </div>
                 <div class="summary-card">
                     <h4>❌ Mismatches</h4>
@@ -659,27 +806,34 @@
             const resultsDiv = document.getElementById('comparisonResults');
             
             resultsDiv.innerHTML = data.comparisons.map(comp => `
-                <div class="comparison-row ${comp.status}">
-                    <div class="position-label">Position ${comp.position}</div>
+                <div class="comparison-row ${comp.matchType}">
+                    <div class="position-label">Row ${comp.position}</div>
                     <div class="value-box source">
                         <div style="font-size: 12px; color: #666; margin-bottom: 4px;">SOURCE</div>
-                        ${comp.sourceValue}
+                        <div class="column-data">
+                            <div class="column-cell col1">${comp.sourceRow.col1}</div>
+                            <div class="column-cell col2">${comp.sourceRow.col2}</div>
+                        </div>
                     </div>
                     <div class="value-box rearranged">
                         <div style="font-size: 12px; color: #666; margin-bottom: 4px;">AUTO-SORTED</div>
-                        ${comp.autoSortedValue}
+                        <div class="column-data">
+                            <div class="column-cell col1">${comp.autoSortedRow.col1}</div>
+                            <div class="column-cell col2">${comp.autoSortedRow.col2}</div>
+                        </div>
                     </div>
-                    <div class="match-icon">
-                        ${comp.isMatch ? '✅' : '❌'}
-                    </div>
+                    <div class="match-icon">${comp.matchIcon}</div>
                 </div>
             `).join('');
         }
 
         function clearData() {
-            document.getElementById('sourceData').value = '';
-            document.getElementById('targetData').value = '';
-            document.getElementById('autoSortedData').value = '';
+            document.getElementById('sourceCol1').value = '';
+            document.getElementById('sourceCol2').value = '';
+            document.getElementById('targetCol1').value = '';
+            document.getElementById('targetCol2').value = '';
+            document.getElementById('autoSortedCol1').value = '';
+            document.getElementById('autoSortedCol2').value = '';
             document.getElementById('results').style.display = 'none';
             document.getElementById('downloadSection').style.display = 'none';
             comparisonData = {};
@@ -692,33 +846,51 @@
             }
 
             const data = comparisonData;
-            let output = 'AUTO-SORT COMPARISON RESULTS\n';
-            output += '==============================\n\n';
+            let output = 'SEPARATE COLUMN COMPARISON RESULTS\n';
+            output += '===================================\n\n';
             
             output += 'SUMMARY:\n';
-            output += `Total Positions: ${data.stats.totalPositions}\n`;
-            output += `Perfect Matches: ${data.stats.matches}\n`;
+            output += `Total Rows: ${data.stats.totalRows}\n`;
+            output += `Exact Matches: ${data.stats.exactMatches}\n`;
+            output += `Partial Matches: ${data.stats.partialMatches}\n`;
             output += `Mismatches: ${data.stats.mismatches}\n`;
             output += `Match Percentage: ${data.stats.matchPercentage}%\n\n`;
             
-            output += 'POSITION-BY-POSITION COMPARISON:\n';
-            output += 'Pos\tSource\tAuto-Sorted\tMatch\n';
+            output += 'ROW-BY-ROW COMPARISON:\n';
+            output += 'Row\tSource Col1\tSource Col2\tTarget Col1\tTarget Col2\tMatch Type\n';
             data.comparisons.forEach(comp => {
-                output += `${comp.position}\t${comp.sourceValue}\t${comp.autoSortedValue}\t${comp.isMatch ? 'YES' : 'NO'}\n`;
+                const matchType = comp.matchType === 'match' ? 'EXACT' : 
+                                comp.matchType === 'partial-match' ? 'PARTIAL' : 'MISMATCH';
+                output += `${comp.position}\t${comp.sourceRow.col1}\t${comp.sourceRow.col2}\t${comp.autoSortedRow.col1}\t${comp.autoSortedRow.col2}\t${matchType}\n`;
             });
 
             copyToClipboard(output, 'Comparison results copied!');
         }
 
         function copyAutoSortedData() {
-            const autoSortedData = document.getElementById('autoSortedData').value;
+            const autoSortedCol1 = document.getElementById('autoSortedCol1').value;
+            const autoSortedCol2 = document.getElementById('autoSortedCol2').value;
             
-            if (!autoSortedData.trim()) {
+            if (!autoSortedCol1.trim() && !autoSortedCol2.trim()) {
                 alert('No auto-sorted data available. Please run Auto-Sort Target first!');
                 return;
             }
 
-            copyToClipboard(autoSortedData, 'Auto-sorted data copied!');
+            const col1Lines = autoSortedCol1.split('\n');
+            const col2Lines = autoSortedCol2.split('\n');
+            const maxLength = Math.max(col1Lines.length, col2Lines.length);
+            
+            let output = 'AUTO-SORTED DATA\n';
+            output += '================\n\n';
+            output += 'Col1\tCol2\n';
+            
+            for (let i = 0; i < maxLength; i++) {
+                const col1 = col1Lines[i] || '';
+                const col2 = col2Lines[i] || '';
+                output += `${col1}\t${col2}\n`;
+            }
+
+            copyToClipboard(output, 'Auto-sorted data copied!');
         }
 
         function copyMismatchesOnly() {
@@ -727,7 +899,7 @@
                 return;
             }
 
-            const mismatches = comparisonData.comparisons.filter(comp => !comp.isMatch);
+            const mismatches = comparisonData.comparisons.filter(comp => comp.matchType === 'mismatch');
             
             if (mismatches.length === 0) {
                 alert('No mismatches found! Everything matches perfectly! ✅');
@@ -736,10 +908,10 @@
 
             let output = 'MISMATCHES ONLY\n';
             output += '===============\n\n';
-            output += 'Pos\tSource\tAuto-Sorted\n';
+            output += 'Row\tSource Col1\tSource Col2\tTarget Col1\tTarget Col2\n';
             
             mismatches.forEach(comp => {
-                output += `${comp.position}\t${comp.sourceValue}\t${comp.autoSortedValue}\n`;
+                output += `${comp.position}\t${comp.sourceRow.col1}\t${comp.sourceRow.col2}\t${comp.autoSortedRow.col1}\t${comp.autoSortedRow.col2}\n`;
             });
 
             copyToClipboard(output, 'Mismatches copied!');
@@ -771,9 +943,12 @@
 
         // Initialize
         window.onload = function() {
-            document.getElementById('sourceData').value = '';
-            document.getElementById('targetData').value = '';
-            document.getElementById('autoSortedData').value = '';
+            document.getElementById('sourceCol1').value = '';
+            document.getElementById('sourceCol2').value = '';
+            document.getElementById('targetCol1').value = '';
+            document.getElementById('targetCol2').value = '';
+            document.getElementById('autoSortedCol1').value = '';
+            document.getElementById('autoSortedCol2').value = '';
         };
     </script>
 </body>
