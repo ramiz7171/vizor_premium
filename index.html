@@ -1069,11 +1069,14 @@
                     matchType = 'missing';
                     matchIcon = '?';
                     mismatches++;
-                } else if (rowsEqual(sourceRow, autoSortedRow)) {
+                } else if (rowsEqual(sourceRow, autoSortedRow) && 
+                    sourceRow.col1 !== '[MISSING]' && sourceRow.col1 !== '[MISSING FROM TARGET]' &&
+                    sourceRow.col2 !== '[MISSING]' && sourceRow.col2 !== '[MISSING FROM TARGET]') {
                     matchType = 'match';
                     matchIcon = '✓';
                     exactMatches++;
-                } else if ((sourceRow.col1 === autoSortedRow.col1) || (sourceRow.col2 === autoSortedRow.col2)) {
+                } else if ((sourceRow.col1 === autoSortedRow.col1 && sourceRow.col1 !== '[MISSING]' && sourceRow.col1 !== '[MISSING FROM TARGET]') ||
+                          (sourceRow.col2 === autoSortedRow.col2 && sourceRow.col2 !== '[MISSING]' && sourceRow.col2 !== '[MISSING FROM TARGET]')) {
                     matchType = 'partial-match';
                     matchIcon = '∼';
                     partialMatches++;
