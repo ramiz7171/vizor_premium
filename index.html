@@ -139,7 +139,7 @@
             width: 200%;
             height: 200%;
             background: repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255,255,255,0.03) 2deg, transparent 4deg);
-            animation: rotate 20s linear infinite;
+            animation: rotate 60s linear infinite;
         }
 
         @keyframes rotate {
@@ -158,6 +158,16 @@
             top: 2rem;
             right: 2rem;
             z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .theme-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.875rem;
+            font-weight: 500;
+            user-select: none;
         }
 
         .toggle-switch {
@@ -208,7 +218,7 @@
         }
 
         .app-subtitle {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             color: rgba(255,255,255,0.9);
             font-weight: 400;
             opacity: 0.9;
@@ -334,14 +344,14 @@
 
         .input-field {
             width: 100%;
-            min-height: 160px;
-            padding: 1.5rem;
+            min-height: 120px;
+            padding: 1rem;
             background: var(--bg-primary);
             border: 2px solid var(--border-primary);
-            border-radius: 20px;
+            border-radius: 16px;
             font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
-            font-size: 0.9rem;
-            line-height: 1.6;
+            font-size: 0.8rem;
+            line-height: 1.4;
             color: var(--text-primary);
             resize: vertical;
             transition: var(--transition-normal);
@@ -563,12 +573,12 @@
         .comparison-row {
             display: grid;
             grid-template-columns: auto 2fr 2fr auto;
-            gap: 2rem;
+            gap: 1.5rem;
             align-items: center;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
             background: var(--bg-primary);
-            border-radius: 20px;
+            border-radius: 16px;
             border: 1px solid var(--border-primary);
             transition: var(--transition-normal);
             position: relative;
@@ -603,6 +613,15 @@
             background: var(--gradient-error);
         }
 
+        .comparison-row.missing {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.02) 100%);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .comparison-row.missing::before {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
         .row-index {
             font-weight: 700;
             color: var(--text-tertiary);
@@ -619,8 +638,8 @@
             background: var(--surface-glass);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-primary);
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 12px;
+            padding: 1rem;
         }
 
         .data-container.source {
@@ -650,15 +669,15 @@
         }
 
         .data-cell {
-            padding: 1rem;
+            padding: 0.75rem;
             background: var(--bg-primary);
-            border-radius: 12px;
+            border-radius: 8px;
             border: 1px solid var(--border-primary);
             font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             color: var(--text-primary);
             text-align: center;
-            min-height: 50px;
+            min-height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -795,11 +814,12 @@
         <div class="main-container">
             <header class="header">
                 <div class="theme-toggle">
+                    <span class="theme-label">Switch Mode</span>
                     <div class="toggle-switch" onclick="toggleTheme()"></div>
                 </div>
                 <div class="header-content">
                     <h1 class="app-title">Vizor Premium</h1>
-                    <p class="app-subtitle">Next-Generation Data Intelligence Platform</p>
+                    <p class="app-subtitle">AI Data Intelligence Platform</p>
                 </div>
             </header>
 
@@ -966,12 +986,10 @@
             const targetCol2 = document.getElementById('targetCol2').value.trim();
 
             if (!sourceCol1 && !sourceCol2) {
-                showNotification('Please enter source data in at least one column', 'error');
                 return;
             }
 
             if (!targetCol1 && !targetCol2) {
-                showNotification('Please enter target data in at least one column', 'error');
                 return;
             }
 
@@ -1014,12 +1032,6 @@
             
             document.getElementById('autoSortedCol1').value = autoSortedCol1;
             document.getElementById('autoSortedCol2').value = autoSortedCol2;
-            
-            const exactMatches = sourceRows.filter(sourceRow => 
-                targetRows.some(targetRow => rowsEqual(sourceRow, targetRow))
-            ).length;
-            
-            showNotification(`Auto-sort completed: ${exactMatches}/${sourceRows.length} matches found`, 'success');
         }
 
         function compareData() {
@@ -1029,7 +1041,6 @@
             const autoSortedCol2 = document.getElementById('autoSortedCol2').value.trim();
 
             if ((!sourceCol1 && !sourceCol2) || (!autoSortedCol1 && !autoSortedCol2)) {
-                showNotification('Please run Auto-Sort Target first', 'error');
                 return;
             }
 
@@ -1050,14 +1061,19 @@
                 let matchType = 'mismatch';
                 let matchIcon = '✗';
                 
-                if (rowsEqual(sourceRow, autoSortedRow) && 
-                    sourceRow.col1 !== '[MISSING]' && sourceRow.col1 !== '[MISSING FROM TARGET]' &&
-                    sourceRow.col2 !== '[MISSING]' && sourceRow.col2 !== '[MISSING FROM TARGET]') {
+                // Check if this row contains missing data
+                const hasMissingData = sourceRow.col1.includes('[MISSING') || sourceRow.col2.includes('[MISSING') ||
+                                     autoSortedRow.col1.includes('[MISSING') || autoSortedRow.col2.includes('[MISSING');
+                
+                if (hasMissingData) {
+                    matchType = 'missing';
+                    matchIcon = '?';
+                    mismatches++;
+                } else if (rowsEqual(sourceRow, autoSortedRow)) {
                     matchType = 'match';
                     matchIcon = '✓';
                     exactMatches++;
-                } else if ((sourceRow.col1 === autoSortedRow.col1 && sourceRow.col1 !== '[MISSING]' && sourceRow.col1 !== '[MISSING FROM TARGET]') ||
-                          (sourceRow.col2 === autoSortedRow.col2 && sourceRow.col2 !== '[MISSING]' && sourceRow.col2 !== '[MISSING FROM TARGET]')) {
+                } else if ((sourceRow.col1 === autoSortedRow.col1) || (sourceRow.col2 === autoSortedRow.col2)) {
                     matchType = 'partial-match';
                     matchIcon = '∼';
                     partialMatches++;
@@ -1090,7 +1106,6 @@
             };
 
             displayResults();
-            showNotification(`Analysis complete: ${matchPercentage}% match rate`, 'success');
         }
 
         function displayResults() {
@@ -1173,7 +1188,6 @@
             
             document.getElementById('results').classList.remove('visible');
             comparisonData = {};
-            showNotification('Workspace cleared', 'success');
         }
 
         function showNotification(message, type = 'success') {
@@ -1183,7 +1197,6 @@
 
         function copyComparisonResults() {
             if (!comparisonData.stats) {
-                showNotification('No comparison data available. Please run analysis first', 'error');
                 return;
             }
 
@@ -1202,11 +1215,12 @@
             output += 'Row\tSource Col1\tSource Col2\tTarget Col1\tTarget Col2\tMatch Type\n';
             data.comparisons.forEach(comp => {
                 const matchType = comp.matchType === 'match' ? 'EXACT' : 
-                                comp.matchType === 'partial-match' ? 'PARTIAL' : 'MISMATCH';
+                                comp.matchType === 'partial-match' ? 'PARTIAL' : 
+                                comp.matchType === 'missing' ? 'MISSING' : 'MISMATCH';
                 output += `${comp.position}\t${comp.sourceRow.col1}\t${comp.sourceRow.col2}\t${comp.autoSortedRow.col1}\t${comp.autoSortedRow.col2}\t${matchType}\n`;
             });
 
-            copyToClipboard(output, 'Comparison results exported successfully');
+            copyToClipboard(output);
         }
 
         function copyAutoSortedData() {
@@ -1214,7 +1228,6 @@
             const autoSortedCol2 = document.getElementById('autoSortedCol2').value;
             
             if (!autoSortedCol1.trim() && !autoSortedCol2.trim()) {
-                showNotification('No auto-sorted data available. Please run Auto-Sort first', 'error');
                 return;
             }
 
@@ -1232,19 +1245,17 @@
                 output += `${col1}\t${col2}\n`;
             }
 
-            copyToClipboard(output, 'Auto-sorted data exported successfully');
+            copyToClipboard(output);
         }
 
         function copyMismatchesOnly() {
             if (!comparisonData.comparisons) {
-                showNotification('No comparison data available. Please run analysis first', 'error');
                 return;
             }
 
-            const mismatches = comparisonData.comparisons.filter(comp => comp.matchType === 'mismatch');
+            const mismatches = comparisonData.comparisons.filter(comp => comp.matchType === 'mismatch' || comp.matchType === 'missing');
             
             if (mismatches.length === 0) {
-                showNotification('No mismatches found. Data quality is perfect!', 'success');
                 return;
             }
 
@@ -1256,20 +1267,18 @@
                 output += `${comp.position}\t${comp.sourceRow.col1}\t${comp.sourceRow.col2}\t${comp.autoSortedRow.col1}\t${comp.autoSortedRow.col2}\n`;
             });
 
-            copyToClipboard(output, 'Mismatches report exported successfully');
+            copyToClipboard(output);
         }
 
-        function copyToClipboard(text, successMessage) {
+        function copyToClipboard(text) {
             try {
                 navigator.clipboard.writeText(text).then(() => {
-                    showNotification(successMessage, 'success');
+                    // Silent copy - no notification needed
                 }).catch(() => {
                     fallbackCopyTextToClipboard(text);
-                    showNotification(successMessage, 'success');
                 });
             } catch (error) {
                 fallbackCopyTextToClipboard(text);
-                showNotification(successMessage, 'success');
             }
         }
 
