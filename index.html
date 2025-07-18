@@ -33,11 +33,6 @@
             --gradient-warning: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
             --gradient-error: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             
-            /* Status Backgrounds */
-            --color-success-bg: rgba(16, 185, 129, 0.1);
-            --color-warning-bg: rgba(245, 158, 11, 0.1);
-            --color-error-bg: rgba(239, 68, 68, 0.1);
-            
             /* Advanced Shadows - Softer, more layered for depth */
             --shadow-xs: 0 2px 4px rgba(0, 0, 0, 0.02);
             --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
@@ -68,11 +63,6 @@
             --border-secondary: #64748b;
             --shadow-color: rgba(0, 0, 0, 0.4);
             --shadow-strong: rgba(0, 0, 0, 0.6);
-            
-            /* Status Backgrounds for Dark Mode */
-            --color-success-bg: rgba(16, 185, 129, 0.15);
-            --color-warning-bg: rgba(245, 158, 11, 0.15);
-            --color-error-bg: rgba(239, 68, 68, 0.15);
         }
 
         * {
@@ -482,18 +472,6 @@
             transition: var(--transition-slow);
             position: relative;
             overflow: hidden;
-        }
-
-        .metric-card.success {
-            background: var(--color-success-bg);
-        }
-
-        .metric-card.warning {
-            background: var(--color-warning-bg);
-        }
-
-        .metric-card.error {
-            background: var(--color-error-bg);
         }
 
         .metric-card::before {
@@ -1129,12 +1107,12 @@
             let statusClass = 'error';
             let statusText = 'Needs Review';
             
-            if (data.stats.mismatches > 0) {
-                statusClass = 'error';
-                statusText = 'Needs Review';
-            } else {
+            if (data.stats.matchPercentage === 100) {
                 statusClass = 'success';
                 statusText = 'Perfect';
+            } else if (data.stats.matchPercentage >= 75) {
+                statusClass = 'warning';
+                statusText = 'Good';
             }
             
             metricsGrid.innerHTML = `
